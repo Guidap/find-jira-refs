@@ -34,7 +34,7 @@ module.exports = class {
       // Search in commit list
       if (ghToken && this.githubEvent.pull_request.number) {
         const octokit = github.getOctokit(ghToken)
-        const { data } = await octokit.pulls.listCommits({
+        const { data } = await octokit.rest.pulls.listCommits({
           owner: this.githubEvent.repository.owner.login,
           repo: this.githubEvent.repository.name,
           pull_number: this.githubEvent.pull_request.number
