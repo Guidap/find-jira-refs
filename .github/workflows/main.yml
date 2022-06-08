@@ -17,6 +17,8 @@ jobs:
       uses: ./
       with:
         string: Search is performed in this string. GA-250 will be found
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Show issues
       run: echo "Issue ${{ steps.find.outputs.issues }} was found"
