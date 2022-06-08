@@ -1,5 +1,5 @@
 const _ = require('lodash')
-const Octokit = require('@octokit/rest')
+const github = require('@actions/github')
 
 const JIRA_REF_REGEX = /([a-zA-Z0-9]+-[0-9]+)/g
 
@@ -32,9 +32,7 @@ module.exports = class {
       stringToSearch.push(this.githubEvent.pull_request.body)
       // Search in commit list
       if (this.githubEvent.pull_request.number) {
-        const octokit = new Octokit({
-          auth: process.env.GITHUB_TOKEN,
-        })
+        const octokit = github.getOctokit(process.env.GITHUB_TOKEN)
         const { data } = await octokit.pulls.listCommits({
           owner: this.githubEvent.repository.owner.login,
           repo: this.githubEvent.repository.name,
@@ -42,7 +40,7 @@ module.exports = class {
         })
         const commitList = data.reduce((acc, item) => {
           acc.push(item.commit);
-        }, []);
+        }, [])
         stringToSearch.push(this.preprocessString(SOURCE_TEMPLATES.commits, commitList))
       }
     } else if (this.githubEvent.commits && Array.isArray(this.githubEvent.commits)) { // If no pull request in context, we search in local commit list
