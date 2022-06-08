@@ -4,8 +4,7 @@ const Octokit = require('@octokit/rest')
 const JIRA_REF_REGEX = /([a-zA-Z0-9]+-[0-9]+)/g
 
 const SOURCE_TEMPLATES = {
-  branch: '{{context.ref}}',
-  commits: "{{context.commits.map(c=>c.message).join(' ')}}",
+  commits: "{{commits.map(c=>c.message).join(' ')}}",
 }
 
 module.exports = class {
@@ -25,24 +24,29 @@ module.exports = class {
     const stringToSearch = [];
     // Search in branch/tag name
     if (this.githubEvent.ref && typeof this.githubEvent.ref === 'string') {
-      stringToSearch.push(this.preprocessString(SOURCE_TEMPLATES.branch, this.githubEvent))
+      stringToSearch.push(this.githubEvent.ref)
     }
-    // Search in pull request commits list
-    if (this.githubEvent.pull_request && this.githubEvent.pull_request.number) {
-      const octokit = new Octokit({
-        auth: process.env.GITHUB_TOKEN,
-      })
-      const { data } = await octokit.pulls.listCommits({
-        owner: this.githubEvent.repository.owner.login,
-        repo: this.githubEvent.repository.name,
-        pull_number: this.githubEvent.pull_request.number
-      })
-      const commitList = data.reduce((acc, item) => {
-        acc.commits.push(item.commit);
-      }, { commits: [] });
-      stringToSearch.push(this.preprocessString(SOURCE_TEMPLATES.commits, commitList))
+    // Search in pull request
+    if (this.githubEvent.pull_request) {
+      stringToSearch.push(this.githubEvent.pull_request.title)
+      stringToSearch.push(this.githubEvent.pull_request.body)
+      // Search in commit list
+      if (this.githubEvent.pull_request.number) {
+        const octokit = new Octokit({
+          auth: process.env.GITHUB_TOKEN,
+        })
+        const { data } = await octokit.pulls.listCommits({
+          owner: this.githubEvent.repository.owner.login,
+          repo: this.githubEvent.repository.name,
+          pull_number: this.githubEvent.pull_request.number
+        })
+        const commitList = data.reduce((acc, item) => {
+          acc.push(item.commit);
+        }, []);
+        stringToSearch.push(this.preprocessString(SOURCE_TEMPLATES.commits, commitList))
+      }
     } else if (this.githubEvent.commits && Array.isArray(this.githubEvent.commits)) { // If no pull request in context, we search in local commit list
-      stringToSearch.push(this.preprocessString(SOURCE_TEMPLATES.commits, this.githubEvent))
+      stringToSearch.push(this.preprocessString(SOURCE_TEMPLATES.commits, this.githubEvent.commits))
     }
 
     await Promise.all(stringToSearch.map(async (searchStr) => {
@@ -67,10 +71,10 @@ module.exports = class {
     return match
   }
 
-  preprocessString (str, context) {
+  preprocessString (str, commits) {
     _.templateSettings.interpolate = /{{([\s\S]+?)}}/g
     const tmpl = _.template(str)
 
-    return tmpl({ context })
+    return tmpl({ commits })
   }
 }
