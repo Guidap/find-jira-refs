@@ -1,10 +1,11 @@
 const _ = require('lodash')
+const Octokit = require('@octokit/rest')
 
 const JIRA_REF_REGEX = /([a-zA-Z0-9]+-[0-9]+)/g
 
 const SOURCE_TEMPLATES = {
-  branch: '{{event.ref}}',
-  commits: "{{event.commits.map(c=>c.message).join(' ')}}",
+  branch: '{{context.ref}}',
+  commits: "{{context.commits.map(c=>c.message).join(' ')}}",
 }
 
 module.exports = class {
@@ -21,15 +22,30 @@ module.exports = class {
       if (foundIssue) foundIssues.push(...foundIssue)
     }
 
-    const templates = [];
-    if (this.githubEvent.commits && Array.isArray(this.githubEvent.commits)) {
-      templates.push(SOURCE_TEMPLATES.commits)
-    }
+    const stringToSearch = [];
+    // Search in branch/tag name
     if (this.githubEvent.ref && typeof this.githubEvent.ref === 'string') {
-      templates.push(SOURCE_TEMPLATES.branch)
+      stringToSearch.push(this.preprocessString(SOURCE_TEMPLATES.branch, this.githubEvent))
     }
-    await Promise.all(templates.map(async (template) => {
-      const searchStr = this.preprocessString(template)
+    // Search in pull request commits list
+    if (this.githubEvent.pull_request && this.githubEvent.pull_request.number) {
+      const octokit = new Octokit({
+        auth: process.env.GITHUB_TOKEN,
+      })
+      const { data } = await octokit.pulls.listCommits({
+        owner: this.githubEvent.repository.owner.login,
+        repo: this.githubEvent.repository.name,
+        pull_number: this.githubEvent.pull_request.number
+      })
+      const commitList = data.reduce((acc, item) => {
+        acc.commits.push(item.commit);
+      }, { commits: [] });
+      stringToSearch.push(this.preprocessString(SOURCE_TEMPLATES.commits, commitList))
+    } else if (this.githubEvent.commits && Array.isArray(this.githubEvent.commits)) { // If no pull request in context, we search in local commit list
+      stringToSearch.push(this.preprocessString(SOURCE_TEMPLATES.commits, this.githubEvent))
+    }
+
+    await Promise.all(stringToSearch.map(async (searchStr) => {
       const foundIssue = await this.findIssueKeyIn(searchStr)
       if (foundIssue) foundIssues.push(...foundIssue)
     }))
@@ -51,10 +67,10 @@ module.exports = class {
     return match
   }
 
-  preprocessString (str) {
+  preprocessString (str, context) {
     _.templateSettings.interpolate = /{{([\s\S]+?)}}/g
     const tmpl = _.template(str)
 
-    return tmpl({ event: this.githubEvent })
+    return tmpl({ context })
   }
 }
