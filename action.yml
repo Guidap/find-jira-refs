@@ -1,0 +1,19 @@
+name: Find Jira Issue References
+description: Extract Jira issue references from different sources in a single Github Action.
+branding:
+  icon: 'book-open'
+  color: 'blue'
+inputs:
+  string:
+    description: Provide a string to extract issue references from
+    required: false
+  unique-values:
+    description: Indicate if we want to filter duplicates or not
+    required: false
+    default: true
+outputs:
+  issues:
+    description: Key of the found issue
+runs:
+  using: 'node16'
+  main: './index.js'

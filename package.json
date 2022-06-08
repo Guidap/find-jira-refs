@@ -1,0 +1,36 @@
+{
+  "name": "find-jira-refs",
+  "version": "1.0.0",
+  "description": "Extract Jira issue references from different sources in a single Github Action.",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=testing jest"
+  },
+  "author": "GUIDAP",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.0.0",
+    "lodash": "^4.17.11"
+  },
+  "devDependencies": {
+    "@atlassian-partner-engineering/eslint-config": "^2.3.2",
+    "eslint": "^5.13.0",
+    "jest": "^24.1.0",
+    "jest-junit": "^6.2.1"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "/helpers/",
+      "/node_modules/"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "coverageReporters": [
+      "lcov",
+      "text",
+      "clover"
+    ],
+    "coverageDirectory": "../test-results"
+  }
+}
