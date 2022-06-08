@@ -4,17 +4,17 @@ name: Test Find Jira Issue Refs
 
 jobs:
   test-find-jira-refs:
-    name: Find Issue Key
+    name: Find Jira Refs
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@master
 
-    - name: Find Issue Key
+    - name: Find Refs
       id: find
       uses: ./
       with:
         string: Search is performed in this string. GA-250 will be found
 
-    - name: Find issue info
+    - name: Show issues
       run: echo "Issue ${{ steps.find.outputs.issues }} was found"

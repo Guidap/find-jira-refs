@@ -4,7 +4,9 @@
   "description": "Extract Jira issue references from different sources in a single Github Action.",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=testing jest"
+    "test": "NODE_ENV=testing jest",
+    "build": "ncc build index.js --minify",
+    "watch": "ncc build index.js --watch --minify"
   },
   "author": "GUIDAP",
   "license": "MIT",
@@ -14,6 +16,7 @@
   },
   "devDependencies": {
     "@atlassian-partner-engineering/eslint-config": "^2.3.2",
+    "@vercel/ncc": "^0.34.0",
     "eslint": "^5.13.0",
     "jest": "^24.1.0",
     "jest-junit": "^6.2.1"
