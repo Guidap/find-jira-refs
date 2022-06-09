@@ -40,7 +40,8 @@ module.exports = class {
           pull_number: this.githubEvent.pull_request.number
         })
         const commitList = data.reduce((acc, item) => {
-          acc.push(item.commit);
+          acc.push(item.commit)
+          return acc
         }, [])
         stringToSearch.push(this.preprocessString(SOURCE_TEMPLATES.commits, commitList))
       }

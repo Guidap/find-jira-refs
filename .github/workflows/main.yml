@@ -21,4 +21,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Show issues
-      run: echo "Issue ${{ steps.find.outputs.issues }} was found"
+      run: echo "Issue ${{ toJSON(steps.find.outputs.issues) }} was found"
