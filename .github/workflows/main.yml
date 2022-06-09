@@ -1,4 +1,6 @@
-on: [push]
+on:
+  push:
+  pull_request:
 
 name: Test Find Jira Issue Refs
 
@@ -15,6 +17,8 @@ jobs:
       uses: ./
       with:
         string: Search is performed in this string. GA-250 will be found
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Show issues
-      run: echo "Issue ${{ steps.find.outputs.issues }} was found"
+      run: echo "Issue ${{ toJSON(steps.find.outputs.issues) }} was found"

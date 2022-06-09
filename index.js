@@ -4,7 +4,6 @@ const Action = require('./action')
 
 // eslint-disable-next-line import/no-dynamic-require
 const githubEvent = require(process.env.GITHUB_EVENT_PATH)
-console.log(githubEvent)
 
 async function exec () {
   try {
