@@ -1,6 +1,8 @@
 # Github Action for finding Jira Issue References
 Extract Jira issue references from different sources in a single Github Action.
 
+[![build](https://github.com/Guidap/find-jira-refs/actions/workflows/main.yml/badge.svg)](https://github.com/Guidap/find-jira-refs/actions/workflows/main.yml)
+
 This repository used the official https://github.com/atlassian/gajira-find-issue-key.
 
 We changed its behavior to match our needs :
